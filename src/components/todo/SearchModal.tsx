@@ -6,9 +6,10 @@ interface Props {
   setIsModalOpen(boolean: boolean): void;
   setMusicTitle(v: string): void;
   setMusicUrl: React.Dispatch<React.SetStateAction<string>>;
+  postId: number | undefined;
 }
 
-function SearchModal({ setIsModalOpen, setMusicTitle, setMusicUrl }: Props) {
+function SearchModal({ setIsModalOpen, setMusicTitle, setMusicUrl, postId }: Props) {
   const [value, setValue] = useState('');
   const [musicList, setMusicList] = useState<any[]>([]);
 
@@ -20,7 +21,7 @@ function SearchModal({ setIsModalOpen, setMusicTitle, setMusicUrl }: Props) {
   const onSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
-      const music = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/music/3?query=${value}`);
+      const music = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/music/${postId}?query=${value}`);
       setMusicList(music.data);
       console.log(musicList);
     } catch {

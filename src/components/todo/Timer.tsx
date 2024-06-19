@@ -4,7 +4,11 @@ import { BiReset } from 'react-icons/bi';
 import { BsSkipStartCircle, BsStopCircle } from 'react-icons/bs';
 import { LuTimer } from 'react-icons/lu';
 
-function Timer() {
+interface Props {
+  postId: number | undefined;
+}
+
+function Timer({ postId }: Props) {
   const [seconds, setSeconds] = useState<number>(0); // 초
   const [isActive, setIsActive] = useState<boolean>(false); // 활성화 여부
 
@@ -12,8 +16,11 @@ function Timer() {
     let interval: NodeJS.Timer;
 
     if (isActive) {
-      interval = setInterval(() => {
-        setSeconds(seconds => seconds + 1);
+      interval = setInterval(async () => {
+        // setSeconds(seconds => seconds + 1);
+        const res = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+        console.log(res.data);
+        setSeconds(res.data.formatted_duration);
       }, 1000);
     } else if (!isActive && seconds !== 0) {
       clearInterval(interval! as NodeJS.Timeout);
@@ -24,14 +31,14 @@ function Timer() {
   const handleStart = async (): Promise<void> => {
     setIsActive(prev => !prev);
     try {
-      const res = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3');
-      console.log(res.data);
-      setSeconds(res.data.duration);
-      if (res) {
-        await axios.patch('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3', { action: 'restart' });
-      }
+      // const res = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3');
+      // console.log(res.data);
+      // setSeconds(res.data.formatted_duration);
+      // if () {
+      await axios.patch(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`, { action: 'restart' });
+      // }
     } catch {
-      await axios.post('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3');
+      await axios.post(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
     }
   };
 
@@ -41,7 +48,7 @@ function Timer() {
     //   const nowTimes = formatTime(seconds);
     //   console.log(nowTimes);
     // }
-    await axios.patch('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3', { action: 'pause' });
+    await axios.patch(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`, { action: 'pause' });
   };
 
   // 리셋
@@ -64,9 +71,12 @@ function Timer() {
 
   useEffect(() => {
     const getTime = async () => {
-      const res = await axios.get('posts/timer/3');
       try {
-        setSeconds(res.data.duration);
+        if (postId) {
+          const res = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+          console.log(res);
+          setSeconds(res.data.formatted_duration);
+        }
       } catch {
         return;
       }
@@ -79,7 +89,9 @@ function Timer() {
       <div>
         <LuTimer className="w-[1.3125rem] h-[1.3125rem] text-black-900" />
       </div>
-      <div className="flex items-center w-[19rem] h-[2rem] font-medium text-[0.875rem] text-textGray">{seconds}</div>
+      <div className="flex items-center w-[19rem] h-[2rem] font-medium text-[0.875rem] text-textGray">
+        {seconds ? seconds : '타이머를 이용해 공부 시간을 알아보세요!'}
+      </div>
       {isActive ? (
         <button type="button" onClick={handleStop}>
           <BsStopCircle className="w-[1.625rem] h-[1.625rem] text-primary-400" />

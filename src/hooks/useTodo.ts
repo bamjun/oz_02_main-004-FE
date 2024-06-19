@@ -1,5 +1,6 @@
 import { axios } from '@/services/instance';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 
 export type TodoItem = {
   id: number;
@@ -7,37 +8,38 @@ export type TodoItem = {
   updated_at: string;
   todo_item: string;
   done: boolean;
-  post: 3;
+  post: number;
 };
 
-const fetchTodos = async () => {
-  const response = await axios.get<TodoItem[]>('posts/todo/3');
-
-  return response.data;
+const fetchTodos = async (postId: number | undefined) => {
+  if (postId !== undefined) {
+    const response = await axios.get<TodoItem[]>(`posts/todo/${postId}`);
+    return response.data;
+  }
 };
-export const useTodos = () => {
+export const useTodos = (postId: number | undefined) => {
   return useQuery({
-    queryKey: ['todolist', 3],
-    queryFn: () => fetchTodos(),
+    queryKey: ['todolist', postId],
+    queryFn: () => fetchTodos(postId),
   });
 };
 
-export const useDeleteTodo = () => {
+export const useDeleteTodo = (postId: number | undefined) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => axios.delete(`posts/todo/3/${id}`),
+    mutationFn: (id: number) => axios.delete(`posts/todo/${postId}/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todolist', 3] });
+      queryClient.invalidateQueries({ queryKey: ['todolist', postId] });
     },
   });
 };
 
-export const useCreateTodo = () => {
+export const useCreateTodo = (postId: number | undefined) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (content: TodoItem) => axios.post('posts/todo/3', content),
+    mutationFn: (content: TodoItem) => axios.post(`posts/todo/${postId}`, content),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todolist', 3] });
+      queryClient.invalidateQueries({ queryKey: ['todolist', postId] });
     },
   });
 };

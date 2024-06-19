@@ -17,7 +17,7 @@ export interface TodoType {
   updated_at: string;
   todo_item: string;
   done: boolean;
-  post: 3;
+  post: number;
 }
 
 function Page() {
@@ -27,9 +27,52 @@ function Page() {
   const [editString, setEditString] = useState<string>();
   const [musicTitle, setMusicTitle] = useState<string | undefined>();
   const [musicUrl, setMusicUrl] = useState<string>('');
-  const { data: todos = [], refetch } = useTodos();
-  const { mutateAsync: deleteTodo } = useDeleteTodo();
-  const { mutateAsync: createTodo } = useCreateTodo();
+  const [goal, setGoal] = useState<string>('');
+  const [deadline, setDeadline] = useState<number>();
+  const [postId, setPostId] = useState<number | undefined>();
+  const { data: todos = [], refetch } = useTodos(postId);
+  const { mutateAsync: deleteTodo } = useDeleteTodo(postId);
+  const { mutateAsync: createTodo } = useCreateTodo(postId);
+
+  const today = new Date();
+  const formattedDate = `${today.getFullYear()}-${'0' + (today.getMonth() + 1).toString().slice(-2)}-${today.getDate()}`;
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const res = await axios.get('posts/');
+        const data = res.data.find((item: any, i: number) => {
+          if (item.todo_date === formattedDate) return i;
+        });
+        // console.log(data);
+        setPostId(data.id);
+        if (res) {
+          setGoal(data.goal);
+          setDeadline(data.days_by_deadline);
+        }
+      } catch (e) {
+        // console.log(e);
+      }
+    };
+    getData();
+  }, []);
+
+  useEffect(() => {
+    const postTodo = async () => {
+      try {
+        const res = await axios.get('posts/');
+        const data = res.data.find((item: any, i: number) => {
+          if (item.todo_date === formattedDate) return i;
+        });
+        if (!data) {
+          await axios.post('posts/', { todo_date: formattedDate });
+        }
+      } catch (error) {}
+    };
+    postTodo();
+  }, []);
+
+  // console.log(postId);
 
   const onInsert = useCallback(
     async (text?: string) => {
@@ -40,7 +83,7 @@ function Page() {
             edit.todo_item = text;
             // setTodos([...todos]);
           }
-          await axios.put(`posts/todo/3/${modalIndex}`, {
+          await axios.put(`posts/todo/${postId}/${modalIndex}`, {
             todo_item: text,
           });
           setEditString(undefined);
@@ -102,7 +145,7 @@ function Page() {
       const checked = todos.find(v => v.id === id);
       if (checked !== undefined) {
         checked.done = !checked.done;
-        await axios.put(`posts/todo/3/${id}`, { done: checked.done });
+        await axios.put(`posts/todo/${postId}/${id}`, { done: checked.done });
         sortByUpdatedAt(todos);
         refetch();
       }
@@ -110,14 +153,21 @@ function Page() {
     [todos],
   );
 
+  const deleteMusic = async () => {
+    await axios.delete(`https://api.oz-02-main-04.xyz/api/v1/posts/music/${postId}`);
+    setMusicTitle('');
+  };
+
   useEffect(() => {
     const getMusic = async () => {
       try {
-        const res = await axios.get('posts/music/playing/3');
-        console.log(res.data);
-        if (res) {
-          setMusicTitle(res.data.title);
-          setMusicUrl(res.data.song_url);
+        if (postId !== undefined) {
+          const res = await axios.get(`posts/music/playing/${postId}`);
+          // console.log(res.data);
+          if (res) {
+            setMusicTitle(res.data.title);
+            setMusicUrl(res.data.song_url);
+          }
         }
       } catch (e) {
         return;
@@ -126,50 +176,19 @@ function Page() {
     getMusic();
   }, []);
 
-  const deleteMusic = async () => {
-    await axios.delete('https://api.oz-02-main-04.xyz/api/v1/posts/music/3');
-    setMusicTitle('');
-  };
-
-  // useEffect(() => {
-  //   const fetchTodo = async () => {
-  //     try {
-  //       const response = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/todo/1');
-  //       const user = await axios.get('https://api.oz-02-main-04.xyz/api/v1/users/');
-  //       console.log(user);
-  //       setTodos(response.data);
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   };
-  //   fetchTodo();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchMusic = async () => {
-  //     try {
-  //       const response = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/music/1');
-  //       console.log(response.data);
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   };
-  //   fetchMusic();
-  // }, []);
-
   return (
     <div className="w-full h-full">
       <main className="wrap-section relative ">
         <header className="pt-[2rem]">
           <div className="flex w-full h-[3.1875rem] px-5 justify-between items-center border-b-[0.0313rem] border-borderGray">
-            <p className="font-bold text-black-900 text-[1.125rem]">이번 달 프로젝트 잘 끝내기</p>
+            <p className="font-bold text-black-900 text-[1.125rem]">{goal}</p>
             <div className="w-[3.75rem] h-[2.375rem] text-primary-600 font-extrabold text-[1.625rem] text-center flex justify-center items-center">
-              D-32
+              D-{deadline}
             </div>
           </div>
           <section className="w-full h-[2.5625rem] flex border-b-[0.0313rem] border-borderGray items-center">
             <div className="flex w-[8.8125rem] h-[2rem] border-r-[0.0313rem] border-borderGray relative items-center justify-center text-[0.8125rem] font-medium text-black-900">
-              2024. 05. 28
+              {formattedDate}
             </div>
             <div className="w-[15.5rem] h-[2rem] px-[0.625rem] flex justify-between items-center">
               <Mood />
@@ -177,7 +196,7 @@ function Page() {
           </section>
           <section>
             <div className="flex items-center justify-around w-full h-[2.5625rem] border-b-[0.0313rem] border-borderGray px-[0.625rem] gap-[0.3125rem]">
-              <Timer />
+              <Timer postId={postId} />
             </div>
           </section>
           <section className="flex w-full h-[2.5625rem] items-center px-[0.625rem] gap-[0.625rem] border-b-[0.0313rem] border-borderGray">
@@ -191,7 +210,7 @@ function Page() {
                   <audio controls loop src={musicUrl} className="w-[11rem] h-[2.5rem]"></audio>
                 </div>
               ) : (
-                <MusicInput setMusicTitle={setMusicTitle} setMusicUrl={setMusicUrl} />
+                <MusicInput setMusicTitle={setMusicTitle} setMusicUrl={setMusicUrl} postId={postId} />
               )}
             </div>
           </section>
