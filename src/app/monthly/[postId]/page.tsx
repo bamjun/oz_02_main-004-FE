@@ -6,8 +6,10 @@ import MusicInput from '@/components/todo/MusicInput';
 import Timer from '@/components/todo/Timer';
 import ToDoInsert from '@/components/todo/ToDoInsert';
 import ToDoListItem from '@/components/todo/ToDoListItem';
-import axios from 'axios';
-import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { useTodos, useDeleteTodo, useCreateTodo, TodoItem } from '@/hooks/useTodo';
+import { axios } from '@/services/instance';
+import { usePathname } from 'next/navigation';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IoMusicalNotesOutline } from 'react-icons/io5';
 
 export interface TodoType {
@@ -16,45 +18,48 @@ export interface TodoType {
   updated_at: string;
   todo_item: string;
   done: boolean;
-  post: 3;
+  post: number;
 }
 
-function Page() {
-  const [todos, setTodos] = useState<TodoType[]>([]);
+function Page({ params }: { params: { postId: number } }) {
+  // const [todos, setTodos] = useState<TodoType[]>([]);
+  const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalIndex, setModalIndex] = useState<number>();
   const [editString, setEditString] = useState<string>();
   const [musicTitle, setMusicTitle] = useState<string | undefined>();
   const [musicUrl, setMusicUrl] = useState<string>('');
+  const [goal, setGoal] = useState<string>('');
+  const [deadline, setDeadline] = useState<number>();
+  const { data: todos = [], refetch } = useTodos(params.postId);
+  const { mutateAsync: deleteTodo } = useDeleteTodo(params.postId);
+  const { mutateAsync: createTodo } = useCreateTodo(params.postId);
+  const [time, setTime] = useState<number>(0);
+  const [date, setDate] = useState<string>('');
 
-  const id = useRef(1);
   const onInsert = useCallback(
     async (text?: string) => {
       if (text) {
         if (editString !== undefined && modalIndex !== undefined) {
           const edit = todos.find(v => v.id === modalIndex);
           if (edit !== undefined) {
-            edit.todo_item = text;
-            setTodos([...todos]);
+            // edit.todo_item = text;
+            // setTodos([...todos]);
           }
-          await axios.put(`https://api.oz-02-main-04.xyz/api/v1/posts/todo/1/${modalIndex}`, {
-            todo_item: text,
-          });
+          // await axios.put(`posts/todo/3/${modalIndex}`, {
+          //   todo_item: text,
+          // });
+          alert('지난 할 일 목록은 입력/수정 할 수 없습니다.');
           setEditString(undefined);
           setModalIndex(undefined);
         } else {
           const todo = {
             todo_item: text,
-            id: id.current,
-            done: false,
           };
-          await axios.post('https://api.oz-02-main-04.xyz/api/v1/posts/todo/1', todo);
-          const res = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/todo/1');
-          setTodos(res.data);
-          ++id.current;
+          createTodo(todo as TodoType);
         }
       } else {
-        alert('TODO를 적어주세요!');
+        alert('지난 할 일 목록은 입력/수정 할 수 없습니다.');
       }
     },
     [todos, editString, modalIndex],
@@ -75,10 +80,12 @@ function Page() {
 
   const onRemove = useCallback(
     async (id?: number) => {
-      if (id != undefined) {
-        setTodos(todos.filter(todo => todo.id !== id));
-      }
-      await axios.delete(`https://api.oz-02-main-04.xyz/api/v1/posts/todo/1/${id}`);
+      // if (id != undefined) {
+      //   setTodos(todos.filter(todo => todo.id !== id));
+      // }
+      // await axios.delete(`https://api.oz-02-main-04.xyz/api/v1/posts/todo/1/${id}`);
+      // deleteTodo(id!);
+      alert('지난 할 일 목록은 삭제 할 수 없습니다.');
       setIsModalOpen(false);
       setModalIndex(undefined);
     },
@@ -100,63 +107,79 @@ function Page() {
     async (id: number) => {
       const checked = todos.find(v => v.id === id);
       if (checked !== undefined) {
-        checked.done = !checked.done;
-        await axios.put(`https://api.oz-02-main-04.xyz/api/v1/posts/todo/1/${id}`, {
-          done: checked.done,
-        });
-        setTodos([...todos]);
+        alert('지난 할 일 목록은 수정 할 수 없습니다.');
       }
     },
     [todos],
   );
 
   useEffect(() => {
-    const fetchTodo = async () => {
+    const getMusic = async () => {
       try {
-        const response = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/todo/1');
-        // const user = await axios.get('https://api.oz-02-main-04.xyz/api/v1/users/');
-        // console.log(user);
-        setTodos(response.data);
+        const res = await axios.get(`posts/music/playing/${params.postId}`);
+        console.log(params.postId);
+        console.log(res.data);
+        if (res) {
+          setMusicTitle(res.data.title);
+          setMusicUrl(res.data.song_url);
+        }
       } catch (e) {
-        console.log(e);
+        return;
       }
+
+      const getTime = async () => {
+        try {
+          const res = await axios.get(`posts/timer/${params.postId}`);
+          setTime(res.data.formatted_duration);
+        } catch {
+          return;
+        }
+      };
+      getTime();
+
+      const getGoal = async () => {
+        try {
+          const res = await axios.get('posts/');
+          console.log(res.data);
+          if (res) {
+            setGoal(res.data[0].goal);
+            setDeadline(res.data[0].days_by_deadline);
+            setDate(res.data[0].todo_date);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      };
+      getGoal();
     };
-    fetchTodo();
+    getMusic();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchMusic = async () => {
-  //     try {
-  //       const response = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/music/1');
-  //       console.log(response.data);
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   };
-  //   fetchMusic();
-  // }, []);
+  const deleteMusic = async () => {
+    alert('지난 할 일 목록의 음악은 삭제 할 수 없습니다.');
+  };
 
   return (
     <div className="w-full h-full">
       <main className="wrap-section relative ">
         <header className="pt-[2rem]">
           <div className="flex w-full h-[3.1875rem] px-5 justify-between items-center border-b-[0.0313rem] border-borderGray">
-            <p className="font-bold text-black-900 text-[1.125rem]">이번 달 프로젝트 잘 끝내기</p>
+            <p className="font-bold text-black-900 text-[1.125rem]">{goal}</p>
             <div className="w-[3.75rem] h-[2.375rem] text-primary-600 font-extrabold text-[1.625rem] text-center flex justify-center items-center">
-              D-32
+              D-{deadline}
             </div>
           </div>
           <section className="w-full h-[2.5625rem] flex border-b-[0.0313rem] border-borderGray items-center">
             <div className="flex w-[8.8125rem] h-[2rem] border-r-[0.0313rem] border-borderGray relative items-center justify-center text-[0.8125rem] font-medium text-black-900">
-              2024. 05. 28
+              {date}
             </div>
             <div className="w-[15.5rem] h-[2rem] px-[0.625rem] flex justify-between items-center">
               <Mood />
             </div>
           </section>
           <section>
-            <div className="flex items-center justify-around w-full h-[2.5625rem] border-b-[0.0313rem] border-borderGray px-[0.625rem] gap-[0.3125rem]">
-              <Timer />
+            <div className="flex items-center justify-center w-full h-[2.5625rem] border-b-[0.0313rem] border-borderGray px-[0.625rem] gap-[0.3125rem]">
+              총 공부 했던 시간 : <span className="text-primary-400">{time}</span>
             </div>
           </section>
           <section className="flex w-full h-[2.5625rem] items-center px-[0.625rem] gap-[0.625rem] border-b-[0.0313rem] border-borderGray">
@@ -166,7 +189,7 @@ function Page() {
             <div className="w-full text-[0.75rem] font-medium text-black-900">
               {musicTitle ? (
                 <div className="w-full flex items-center justify-between">
-                  <span onClick={() => setMusicTitle('')}>{musicTitle}</span>
+                  <span onClick={deleteMusic}>{musicTitle}</span>
                   <audio controls loop src={musicUrl} className="w-[11rem] h-[2.5rem]"></audio>
                 </div>
               ) : (

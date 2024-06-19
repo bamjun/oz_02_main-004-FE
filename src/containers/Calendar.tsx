@@ -126,7 +126,15 @@ export default function Calendar() {
                         <td
                           key={i}
                           className={`w-[3.1875rem] h-full text-xs ${i !== 0 && i !== 6 && 'border-[0.0313rem]'} align-middle text-center border-black-200 `}>
-                          <button disabled={!hasPosts} onClick={() => router.push(`/monthly/${postId}`)}>
+                          <button
+                            disabled={!hasPosts}
+                            onClick={() => {
+                              if (!isToday) {
+                                router.push(`monthly/${postId}`);
+                              } else {
+                                router.push(`/todolist`);
+                              }
+                            }}>
                             <div
                               className={`w-[1.125rem] h-[1.125rem] rounded-full flex justify-center items-center ${isToday ? 'bg-primary-500 text-white' : ''} ${!hasPosts ? 'text-black-300' : ''} mx-auto`}>
                               {day}
