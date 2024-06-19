@@ -191,7 +191,7 @@ function Page() {
               {formattedDate}
             </div>
             <div className="w-[15.5rem] h-[2rem] px-[0.625rem] flex justify-between items-center">
-              <Mood />
+              <Mood formattedDate={formattedDate} />
             </div>
           </section>
           <section>
