@@ -36,6 +36,7 @@ function Page({ params }: { params: { postId: number } }) {
   const { mutateAsync: createTodo } = useCreateTodo(params.postId);
   const [time, setTime] = useState<number>(0);
   const [date, setDate] = useState<string>('');
+  const formattedDate = '';
 
   const onInsert = useCallback(
     async (text?: string) => {
@@ -174,7 +175,7 @@ function Page({ params }: { params: { postId: number } }) {
               {date}
             </div>
             <div className="w-[15.5rem] h-[2rem] px-[0.625rem] flex justify-between items-center">
-              <Mood />
+              <Mood formattedDate={formattedDate} />
             </div>
           </section>
           <section>
