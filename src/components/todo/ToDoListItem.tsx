@@ -13,7 +13,7 @@ interface Props {
   id: number | undefined;
 }
 
-function ToDoListItem({ todo, openModal, handleComplete, isModalOpen, modalIndex, id }: Props) {
+function ToDoListItem({ todo, openModal, handleComplete, isModalOpen, modalIndex }: Props) {
   return (
     <>
       <div className="flex items-center">

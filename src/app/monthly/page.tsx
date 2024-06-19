@@ -2,18 +2,10 @@
 import NavBottom from '@/components/NavBottom';
 import Calendar from '@/containers/Calendar';
 import { useGetStreak } from '@/services/getStreak';
-import { useEffect, useState } from 'react';
 
 export default function Monthly() {
   const { data: streak, isLoading: isStreakLoading, error: isStreakError } = useGetStreak();
-  const [streakNumber, setStreakNumber] = useState(0);
-
-  useEffect(() => {
-    if (streak !== undefined) {
-      setStreakNumber(streak.streak);
-      console.log('streak', streak);
-    }
-  }, [streak]);
+  const streakNumber = streak?.streak ?? 0;
 
   return (
     <main className="w-full h-full">

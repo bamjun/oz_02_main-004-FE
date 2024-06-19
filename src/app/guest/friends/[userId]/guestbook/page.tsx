@@ -1,66 +1,23 @@
 'use client';
+import { selectedUserAtom } from '@/atoms/atoms';
+import DeleteAlert from '@/components/guest/DeleteAlert';
 import GuestListItem from '@/components/guest/GuestListItem';
 import useMoveScrollBottom from '@/hooks/useMoveScrollBottom';
-import getTodayDate from '@/libs/getTodayDate';
-import { GuestBookListType } from '@/types/guestBookType';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useGetGuestBook } from '@/services/getGuestBook';
+import { usePostGuestBook } from '@/services/postGuestBook';
+import { useAtomValue } from 'jotai';
+import { useCallback, useRef, useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
-import { FaUserFriends } from 'react-icons/fa';
 
-export default function Guest() {
+export default function FriendGuestBook() {
   const [userInput, setUserInput] = useState('');
-  const [guestBook, setGuestBook] = useState<GuestBookListType[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const scrollRef = useMoveScrollBottom(guestBook);
-  const router = useRouter();
-  let guestBookSampleList = [
-    {
-      name: '방명록1',
-      date: '2021-08-01',
-      content: '안녕하세요',
-    },
-    {
-      name: '방명록2',
-      date: '2021-08-02',
-      content:
-        '안녕하세요~ 방명록 내용 뭘 써야될까 으아ㅏ아아ㅏㅏ아ㅏㅏ아ㅏㅏㅇ 어디까지 적을 수 있는 거예요...? 더 길게 적어야되는데 뭘 적어야될까 루루루루루ㅜ루루룰룰',
-    },
-    {
-      name: '방명록3',
-      date: '2021-08-03',
-      content: '안녕하세요',
-    },
-    {
-      name: '방명록4',
-      date: '2021-08-04',
-      content: '안녕하세요',
-    },
-    {
-      name: '방명록5',
-      date: '2021-08-05',
-      content: '안녕하세요 띄어쓰기 되나..?    안되네 엔터도 안먹히네',
-    },
-    {
-      name: '방명록6',
-      date: '2021-08-05',
-      content: '안녕하세요 띄어쓰기 되나..?    안되네 엔터도 안먹히네',
-    },
-    {
-      name: '방명록7',
-      date: '2021-08-05',
-      content: '안녕하세요 띄어쓰기 되나..?    안되네 엔터도 안먹히네',
-    },
-    {
-      name: '방명록8',
-      date: '2021-08-05',
-      content: '안녕하세요 엔터 들어갈 수 있게 해야되나..?',
-    },
-  ];
-
-  useEffect(() => {
-    setGuestBook(guestBookSampleList);
-  }, []);
+  const { data: guestBook, isLoading: isGuestBookLoading, error: isGuestBookError } = useGetGuestBook(1);
+  const guestBookList = guestBook ?? [];
+  const { mutateAsync: postGuestBook } = usePostGuestBook();
+  const scrollRef = useMoveScrollBottom(guestBookList);
+  const selectedUser = useAtomValue(selectedUserAtom);
+  const itemId = useRef(0);
 
   const modalHandler = () => {
     setModalOpen(!modalOpen);
@@ -74,27 +31,27 @@ export default function Guest() {
     (e: React.FormEvent) => {
       setUserInput('');
       e.preventDefault();
-      setGuestBook([...guestBook, { name: '닉네임', date: getTodayDate(), content: userInput }]);
-      console.log(guestBook);
+      postGuestBook({ user_id: 1, content: userInput, guestbook_user: 1 });
     },
-    [userInput, guestBook],
+    [userInput, postGuestBook],
   );
 
   return (
     <main className="w-full h-full relative">
       <div className="w-full h-full bg-saturdayBlue absolute">배경</div>
+      {modalOpen && <DeleteAlert onClose={modalHandler} itemId={itemId} />}
       <div className="w-full h-[calc(100%-2.6875rem)] absolute z-10 pt-11 px-[1.4375rem] flex flex-col">
         <div
           className={`w-[21.5rem] h-[39.625rem] rounded-[5px] bg-white border border-black-200 relative flex flex-col`}>
           <div className="w-[21.5rem] h-[3.6rem] border-b-[0.5px] border-black-200 text-lg font-semibold flex justify-center items-center">
-            까피까피츄님의 방명록
+            {selectedUser?.nickname}의 방명록
           </div>
           <div ref={scrollRef} className="w-full h-full overflow-auto scroll-bar">
             <ul className="py-2">
-              {guestBook.map((item, index) => {
+              {guestBookList.map((item, index) => {
                 return (
                   <li key={index} className="border-b-[0.5px] border-black-200">
-                    <GuestListItem item={item} modalHandler={modalHandler} />
+                    <GuestListItem item={item} modalHandler={modalHandler} itemId={itemId} />
                   </li>
                 );
               })}

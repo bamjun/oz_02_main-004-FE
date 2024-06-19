@@ -13,11 +13,13 @@ import PetStateMessage from '@/components/main/PetStateMessage';
 import PetProfile from '@/components/main/PetProfile';
 import axios from 'axios';
 import { petType } from '@/types/petType';
-
+import { userAtom } from '@/atoms/atoms';
+import { useAtom } from 'jotai';
 function Main() {
   const [petData, setPetData] = useState<petType>();
   const [backgroundImageURL, setBackgroundImageURL] = useState('');
-
+  const [user] = useAtom(userAtom);
+  console.log(user);
   useEffect(() => {
     axios
       .get<petType>('https://api.oz-02-main-04.xyz/api/v1/pets/mypet/1/')

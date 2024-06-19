@@ -4,15 +4,23 @@ import { BiReset } from 'react-icons/bi';
 import { BsSkipStartCircle, BsStopCircle } from 'react-icons/bs';
 import { LuTimer } from 'react-icons/lu';
 
-function Timer() {
+interface Props {
+  postId: number | undefined;
+}
+
+function Timer({ postId }: Props) {
   const [seconds, setSeconds] = useState<number>(0); // 초
   const [isActive, setIsActive] = useState<boolean>(false); // 활성화 여부
 
   useEffect(() => {
     let interval: NodeJS.Timer;
+
     if (isActive) {
-      interval = setInterval(() => {
-        setSeconds(seconds => seconds + 1);
+      interval = setInterval(async () => {
+        // setSeconds(seconds => seconds + 1);
+        const res = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+        console.log(res.data);
+        setSeconds(res.data.formatted_duration);
       }, 1000);
     } else if (!isActive && seconds !== 0) {
       clearInterval(interval! as NodeJS.Timeout);
@@ -22,20 +30,25 @@ function Timer() {
 
   const handleStart = async (): Promise<void> => {
     setIsActive(prev => !prev);
-    // const response = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/timer/1');
-
-    // if (!response.data) {
-    // await axios.post('https://api.oz-02-main-04.xyz/api/v1/posts/timer/1', { on_btn: false });
-    // }
+    try {
+      // const res = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3');
+      // console.log(res.data);
+      // setSeconds(res.data.formatted_duration);
+      // if () {
+      await axios.patch(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`, { action: 'restart' });
+      // }
+    } catch {
+      await axios.post(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+    }
   };
 
   const handleStop = async () => {
     setIsActive(prev => !prev);
-    if (!isActive) {
-      const nowTimes = formatTime(seconds);
-      console.log(nowTimes);
-      // await axios.patch('https://api.oz-02-main-04.xyz/api/v1/posts/timer/1'), { duration: seconds };
-    }
+    // if (!isActive) {
+    //   const nowTimes = formatTime(seconds);
+    //   console.log(nowTimes);
+    // }
+    await axios.patch(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`, { action: 'pause' });
   };
 
   // 리셋
@@ -43,15 +56,6 @@ function Timer() {
     setSeconds(0);
     setIsActive(false);
   };
-
-  useEffect(() => {
-    const createTimer = async () => {
-      // if (seconds) {
-      //   await axios.post('https://api.oz-02-main-04.xyz/api/v1/posts/timer/1');
-      // }
-    };
-    createTimer();
-  }, []);
 
   const formatTime = (time: number) => {
     const hours: number = Math.floor(time / 3600); // 시간
@@ -65,17 +69,20 @@ function Timer() {
     return `${hoursStr}시간 ${minutesStr}분 ${secondStr}초`;
   };
 
-  // useEffect(() => {
-  //   const fetchTimer = async () => {
-  //     const res = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/timer/1');
-  //     console.log(res.data);
-
-  //     if (res.data) {
-  //       setSeconds(res.data.duration);
-  //     }
-  //   };
-  //   fetchTimer();
-  // }, []);
+  useEffect(() => {
+    const getTime = async () => {
+      try {
+        if (postId) {
+          const res = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+          console.log(res);
+          setSeconds(res.data.formatted_duration);
+        }
+      } catch {
+        return;
+      }
+    };
+    getTime();
+  }, []);
 
   return (
     <>
@@ -83,15 +90,15 @@ function Timer() {
         <LuTimer className="w-[1.3125rem] h-[1.3125rem] text-black-900" />
       </div>
       <div className="flex items-center w-[19rem] h-[2rem] font-medium text-[0.875rem] text-textGray">
-        {formatTime(seconds)}
+        {seconds ? seconds : '타이머를 이용해 공부 시간을 알아보세요!'}
       </div>
       {isActive ? (
-        <button type="button" onClick={handleStart}>
+        <button type="button" onClick={handleStop}>
           <BsStopCircle className="w-[1.625rem] h-[1.625rem] text-primary-400" />
         </button>
       ) : (
         <>
-          <button type="button" onClick={handleStop}>
+          <button type="button" onClick={handleStart}>
             <BsSkipStartCircle className="w-[1.625rem] h-[1.625rem] text-black-200" />
           </button>
           {/* <button type="button" onClick={handleReset}>

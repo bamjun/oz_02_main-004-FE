@@ -1,7 +1,15 @@
 import { DeleteAlertProps } from '@/types/guestBookType';
 import ModalWrapper from '../ModalWrapper';
+import { useDeleteGuestBook } from '@/services/deleteGuestBook';
 
-export default function DeleteAlert({ onClose }: DeleteAlertProps) {
+export default function DeleteAlert({ onClose, itemId }: DeleteAlertProps) {
+  const { mutateAsync: deleteGuestBook } = useDeleteGuestBook();
+
+  const handleDeleteItem = () => {
+    deleteGuestBook(itemId.current);
+    onClose();
+  };
+
   return (
     <ModalWrapper onClose={onClose}>
       <div className="w-full h-full flex justify-center items-center bg-[rgba(0,0,0,0.5)]">
@@ -13,7 +21,11 @@ export default function DeleteAlert({ onClose }: DeleteAlertProps) {
             <button className="w-[8.9375rem] h-full bg-black-200 rounded-[1.25rem] text-white" onClick={onClose}>
               취소
             </button>
-            <button className="w-[8.9375rem] h-full bg-primary-400 rounded-[1.25rem] text-white">확인</button>
+            <button
+              className="w-[8.9375rem] h-full bg-primary-400 rounded-[1.25rem] text-white"
+              onClick={handleDeleteItem}>
+              확인
+            </button>
           </div>
         </div>
       </div>

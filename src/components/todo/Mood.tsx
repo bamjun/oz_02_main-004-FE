@@ -2,12 +2,27 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { TbMoodEmpty, TbMoodSad, TbMoodSmile } from 'react-icons/tb';
 
-function Mood() {
+interface Props {
+  formattedDate: string;
+}
+
+function Mood({ formattedDate }: Props) {
   const [selectMood, setSelectMood] = useState<number>();
 
   const handleSelect = async (selectMood: number) => {
     // await axios.put('https://api.oz-02-main-04.xyz/api/v1/posts/1', { feeling_status: selectMood });
     setSelectMood(selectMood);
+  };
+
+  const getMood = async () => {
+    const res = await axios.get('posts/');
+    const data = res.data.find((item: any, i: number) => {
+      if (item.todo_date === formattedDate) return i;
+    });
+    if (data.feeling_status) {
+      setSelectMood(data.feeling_status);
+    }
+    getMood;
   };
 
   return (

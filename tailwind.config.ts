@@ -70,6 +70,8 @@ const config: Config = {
       animation: {
         fadeIn: '0.6s ease 0s fadeIn',
         fadeInDown: '0.5s ease 0s fadeInDown',
+        vibration: 'vibration 1s linear infinite',
+        boxopen: 'boxopen 2s linear',
       },
       keyframes: {
         fadeIn: {
@@ -79,6 +81,17 @@ const config: Config = {
         fadeInDown: {
           '0%': { height: '0', opacity: '0' },
           '100%': { height: 'fit', transform: 'translateY(0)', opacity: '1' },
+        },
+        vibration: {
+          '0%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-10deg)' },
+          '50%': { transform: 'rotate(0deg)' },
+          '75%': { transform: 'rotate(10deg)' },
+          '100%': { transform: 'rotate(0deg)' },
+        },
+        boxopen: {
+          '0%': {opacity: '0', scale: '0%'},
+          '100%': {opacity: '100', scale: '100%'}
         },
       },
     },

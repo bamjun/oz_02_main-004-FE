@@ -1,16 +1,33 @@
+import { MutableRefObject } from 'react';
+
 export interface GuestBookListType {
-  name: string;
-  date: string;
+  id: number;
+  user_nickname: string;
+  created_at: string;
+  updated_at: string;
   content: string;
+  guestbook: number;
+  user: number;
 }
 
 export interface GuestListItemProps {
   item: {
-    name: string;
-    date: string;
+    id: number;
+    user_nickname: string;
+    created_at: string;
+    updated_at: string;
     content: string;
+    guestbook: number;
+    user: number;
   };
   modalHandler: () => void;
+  itemId: MutableRefObject<number>;
+}
+
+export interface postGuestBookProps {
+  user_id: number;
+  content: string;
+  guestbook_user: number;
 }
 
 export interface NickNameListType {
@@ -20,5 +37,10 @@ export interface NickNameListType {
 
 export interface DeleteAlertProps {
   onClose: () => void;
-  bgColor?: string;
+  itemId: MutableRefObject<number>;
+}
+
+export interface SelectedUser {
+  id: number;
+  nickname: string;
 }

@@ -8,6 +8,7 @@ import ToDoInsert from '@/components/todo/ToDoInsert';
 import ToDoListItem from '@/components/todo/ToDoListItem';
 import { useTodos, useDeleteTodo, useCreateTodo, TodoItem } from '@/hooks/useTodo';
 import { axios } from '@/services/instance';
+import { usePathname } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { IoMusicalNotesOutline } from 'react-icons/io5';
 
@@ -20,8 +21,9 @@ export interface TodoType {
   post: number;
 }
 
-function Page() {
+function Page({ params }: { params: { postId: number } }) {
   // const [todos, setTodos] = useState<TodoType[]>([]);
+  const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalIndex, setModalIndex] = useState<number>();
   const [editString, setEditString] = useState<string>();
@@ -29,50 +31,12 @@ function Page() {
   const [musicUrl, setMusicUrl] = useState<string>('');
   const [goal, setGoal] = useState<string>('');
   const [deadline, setDeadline] = useState<number>();
-  const [postId, setPostId] = useState<number | undefined>();
-  const { data: todos = [], refetch } = useTodos(postId);
-  const { mutateAsync: deleteTodo } = useDeleteTodo(postId);
-  const { mutateAsync: createTodo } = useCreateTodo(postId);
-
-  const today = new Date();
-  const formattedDate = `${today.getFullYear()}-${'0' + (today.getMonth() + 1).toString().slice(-2)}-${today.getDate()}`;
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const res = await axios.get('posts/');
-        const data = res.data.find((item: any, i: number) => {
-          if (item.todo_date === formattedDate) return i;
-        });
-        // console.log(data);
-        setPostId(data.id);
-        if (res) {
-          setGoal(data.goal);
-          setDeadline(data.days_by_deadline);
-        }
-      } catch (e) {
-        // console.log(e);
-      }
-    };
-    getData();
-  }, []);
-
-  useEffect(() => {
-    const postTodo = async () => {
-      try {
-        const res = await axios.get('posts/');
-        const data = res.data.find((item: any, i: number) => {
-          if (item.todo_date === formattedDate) return i;
-        });
-        if (!data) {
-          await axios.post('posts/', { todo_date: formattedDate });
-        }
-      } catch (error) {}
-    };
-    postTodo();
-  }, []);
-
-  // console.log(postId);
+  const { data: todos = [], refetch } = useTodos(params.postId);
+  const { mutateAsync: deleteTodo } = useDeleteTodo(params.postId);
+  const { mutateAsync: createTodo } = useCreateTodo(params.postId);
+  const [time, setTime] = useState<number>(0);
+  const [date, setDate] = useState<string>('');
+  const formattedDate = '';
 
   const onInsert = useCallback(
     async (text?: string) => {
@@ -80,12 +44,13 @@ function Page() {
         if (editString !== undefined && modalIndex !== undefined) {
           const edit = todos.find(v => v.id === modalIndex);
           if (edit !== undefined) {
-            edit.todo_item = text;
+            // edit.todo_item = text;
             // setTodos([...todos]);
           }
-          await axios.put(`posts/todo/${postId}/${modalIndex}`, {
-            todo_item: text,
-          });
+          // await axios.put(`posts/todo/3/${modalIndex}`, {
+          //   todo_item: text,
+          // });
+          alert('지난 할 일 목록은 입력/수정 할 수 없습니다.');
           setEditString(undefined);
           setModalIndex(undefined);
         } else {
@@ -95,7 +60,7 @@ function Page() {
           createTodo(todo as TodoType);
         }
       } else {
-        alert('TODO를 적어주세요!');
+        alert('지난 할 일 목록은 입력/수정 할 수 없습니다.');
       }
     },
     [todos, editString, modalIndex],
@@ -120,7 +85,8 @@ function Page() {
       //   setTodos(todos.filter(todo => todo.id !== id));
       // }
       // await axios.delete(`https://api.oz-02-main-04.xyz/api/v1/posts/todo/1/${id}`);
-      deleteTodo(id!);
+      // deleteTodo(id!);
+      alert('지난 할 일 목록은 삭제 할 수 없습니다.');
       setIsModalOpen(false);
       setModalIndex(undefined);
     },
@@ -140,41 +106,59 @@ function Page() {
 
   const handleComplete = useCallback(
     async (id: number) => {
-      const sortByUpdatedAt = (todos: TodoItem[]) =>
-        todos.sort((a, b) => Number(new Date(b.updated_at)) - Number(new Date(a.updated_at)));
       const checked = todos.find(v => v.id === id);
       if (checked !== undefined) {
-        checked.done = !checked.done;
-        await axios.put(`posts/todo/${postId}/${id}`, { done: checked.done });
-        sortByUpdatedAt(todos);
-        refetch();
+        alert('지난 할 일 목록은 수정 할 수 없습니다.');
       }
     },
     [todos],
   );
 
-  const deleteMusic = async () => {
-    await axios.delete(`https://api.oz-02-main-04.xyz/api/v1/posts/music/${postId}`);
-    setMusicTitle('');
-  };
-
   useEffect(() => {
     const getMusic = async () => {
       try {
-        if (postId !== undefined) {
-          const res = await axios.get(`posts/music/playing/${postId}`);
-          // console.log(res.data);
-          if (res) {
-            setMusicTitle(res.data.title);
-            setMusicUrl(res.data.song_url);
-          }
+        const res = await axios.get(`posts/music/playing/${params.postId}`);
+        console.log(params.postId);
+        console.log(res.data);
+        if (res) {
+          setMusicTitle(res.data.title);
+          setMusicUrl(res.data.song_url);
         }
       } catch (e) {
         return;
       }
+
+      const getTime = async () => {
+        try {
+          const res = await axios.get(`posts/timer/${params.postId}`);
+          setTime(res.data.formatted_duration);
+        } catch {
+          return;
+        }
+      };
+      getTime();
+
+      const getGoal = async () => {
+        try {
+          const res = await axios.get('posts/');
+          console.log(res.data);
+          if (res) {
+            setGoal(res.data[0].goal);
+            setDeadline(res.data[0].days_by_deadline);
+            setDate(res.data[0].todo_date);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      };
+      getGoal();
     };
     getMusic();
   }, []);
+
+  const deleteMusic = async () => {
+    alert('지난 할 일 목록의 음악은 삭제 할 수 없습니다.');
+  };
 
   return (
     <div className="w-full h-full">
@@ -188,15 +172,15 @@ function Page() {
           </div>
           <section className="w-full h-[2.5625rem] flex border-b-[0.0313rem] border-borderGray items-center">
             <div className="flex w-[8.8125rem] h-[2rem] border-r-[0.0313rem] border-borderGray relative items-center justify-center text-[0.8125rem] font-medium text-black-900">
-              {formattedDate}
+              {date}
             </div>
             <div className="w-[15.5rem] h-[2rem] px-[0.625rem] flex justify-between items-center">
               <Mood formattedDate={formattedDate} />
             </div>
           </section>
           <section>
-            <div className="flex items-center justify-around w-full h-[2.5625rem] border-b-[0.0313rem] border-borderGray px-[0.625rem] gap-[0.3125rem]">
-              <Timer postId={postId} />
+            <div className="flex items-center justify-center w-full h-[2.5625rem] border-b-[0.0313rem] border-borderGray px-[0.625rem] gap-[0.3125rem]">
+              총 공부 했던 시간 : <span className="text-primary-400">{time}</span>
             </div>
           </section>
           <section className="flex w-full h-[2.5625rem] items-center px-[0.625rem] gap-[0.625rem] border-b-[0.0313rem] border-borderGray">
@@ -210,7 +194,7 @@ function Page() {
                   <audio controls loop src={musicUrl} className="w-[11rem] h-[2.5rem]"></audio>
                 </div>
               ) : (
-                <MusicInput setMusicTitle={setMusicTitle} setMusicUrl={setMusicUrl} postId={postId} />
+                <MusicInput setMusicTitle={setMusicTitle} setMusicUrl={setMusicUrl} />
               )}
             </div>
           </section>

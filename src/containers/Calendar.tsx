@@ -4,12 +4,9 @@ import SelectBox from '@/components/SelectBox';
 import { DAY_OF_WEEK } from '@/constants';
 import useSwipeDirection from '@/hooks/useSwipeDirection';
 import { useEffect, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
-import { userAtom } from '@/atoms/atoms';
 import useSetOptions from '@/hooks/useSetOptions';
 import { useRouter } from 'next/navigation';
 import { useGetPostsList } from '@/services/getPostsList';
-import { PostType } from '@/types/calendarType';
 import createCalendar from '@/libs/createCalendar';
 
 export default function Calendar() {
@@ -19,8 +16,8 @@ export default function Calendar() {
   const [currentYear, setCurrentYear] = useState(todayYear);
   const [currentMonth, setCurrentMonth] = useState(todayMonth);
   const { data: posts, isLoading: isPostsLoading, error: isPostsError } = useGetPostsList();
+  const postsList = posts ?? [];
   const [calendar, setCalendar] = useState<string[][]>([]);
-  const [postsList, setPostsList] = useState<PostType[]>([]);
   const [startDate, setStartDate] = useState('');
   const [lastDate, setLastDate] = useState('');
   const calendarRef = useRef<HTMLDivElement | null>(null);
@@ -32,13 +29,11 @@ export default function Calendar() {
     currentMonth,
     setCurrentMonth,
   });
-  const user = useAtomValue(userAtom);
   const router = useRouter();
 
   useEffect(() => {
     if (posts !== undefined) {
-      setPostsList(posts);
-      const dateList = posts.map((res: PostType) => res.todo_date.replace(/[^0-9]/g, ''));
+      const dateList = posts.map(res => Number(res.todo_date.replace(/[^0-9]/g, '')));
       setStartDate(Math.min(...dateList).toString());
       setLastDate(Math.max(...dateList).toString());
     } else {
@@ -131,7 +126,15 @@ export default function Calendar() {
                         <td
                           key={i}
                           className={`w-[3.1875rem] h-full text-xs ${i !== 0 && i !== 6 && 'border-[0.0313rem]'} align-middle text-center border-black-200 `}>
-                          <button disabled={!hasPosts} onClick={() => router.push('/todolist')}>
+                          <button
+                            disabled={!hasPosts}
+                            onClick={() => {
+                              if (!isToday) {
+                                router.push(`monthly/${postId}`);
+                              } else {
+                                router.push(`/todolist`);
+                              }
+                            }}>
                             <div
                               className={`w-[1.125rem] h-[1.125rem] rounded-full flex justify-center items-center ${isToday ? 'bg-primary-500 text-white' : ''} ${!hasPosts ? 'text-black-300' : ''} mx-auto`}>
                               {day}
