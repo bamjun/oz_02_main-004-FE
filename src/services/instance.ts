@@ -15,7 +15,7 @@ const useSetCSRFToken = () => {
 };
 
 export const axios = _axios.create({
-  baseURL: 'https://api.oz-02-main-04.xyz/api/v1/',
+  baseURL: 'https://api.petodo.today/api/v1/',
   timeout: 0,
   withXSRFToken: true,
   withCredentials: true,
@@ -68,7 +68,7 @@ axios.interceptors.response.use(
 // _axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN';
 
 // export const axios = _axios.create({
-//   baseURL: 'https://api.oz-02-main-04.xyz/api/v1/',
+//   baseURL: 'https://api.petodo.today/api/v1/',
 //   timeout: 0,
 //   withXSRFToken: true,
 //   withCredentials: true,

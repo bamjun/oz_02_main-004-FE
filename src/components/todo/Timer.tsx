@@ -18,7 +18,7 @@ function Timer({ postId }: Props) {
     if (isActive) {
       interval = setInterval(async () => {
         // setSeconds(seconds => seconds + 1);
-        const res = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+        const res = await axios.get(`https://api.petodo.today/api/v1/posts/timer/${postId}`);
         console.log(res.data);
         setSeconds(res.data.formatted_duration);
       }, 1000);
@@ -31,14 +31,14 @@ function Timer({ postId }: Props) {
   const handleStart = async (): Promise<void> => {
     setIsActive(prev => !prev);
     try {
-      // const res = await axios.get('https://api.oz-02-main-04.xyz/api/v1/posts/timer/3');
+      // const res = await axios.get('https://api.petodo.today/api/v1/posts/timer/3');
       // console.log(res.data);
       // setSeconds(res.data.formatted_duration);
       // if () {
-      await axios.patch(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`, { action: 'restart' });
+      await axios.patch(`https://api.petodo.today/api/v1/posts/timer/${postId}`, { action: 'restart' });
       // }
     } catch {
-      await axios.post(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+      await axios.post(`https://api.petodo.today/api/v1/posts/timer/${postId}`);
     }
   };
 
@@ -48,7 +48,7 @@ function Timer({ postId }: Props) {
     //   const nowTimes = formatTime(seconds);
     //   console.log(nowTimes);
     // }
-    await axios.patch(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`, { action: 'pause' });
+    await axios.patch(`https://api.petodo.today/api/v1/posts/timer/${postId}`, { action: 'pause' });
   };
 
   // 리셋
@@ -73,7 +73,7 @@ function Timer({ postId }: Props) {
     const getTime = async () => {
       try {
         if (postId) {
-          const res = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/timer/${postId}`);
+          const res = await axios.get(`https://api.petodo.today/api/v1/posts/timer/${postId}`);
           console.log(res);
           setSeconds(res.data.formatted_duration);
         }

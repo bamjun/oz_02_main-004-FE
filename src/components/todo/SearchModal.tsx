@@ -21,7 +21,7 @@ function SearchModal({ setIsModalOpen, setMusicTitle, setMusicUrl, postId }: Pro
   const onSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
-      const music = await axios.get(`https://api.oz-02-main-04.xyz/api/v1/posts/music/${postId}?query=${value}`);
+      const music = await axios.get(`https://api.petodo.today/api/v1/posts/music/${postId}?query=${value}`);
       setMusicList(music.data);
       console.log(musicList);
     } catch {
@@ -32,7 +32,7 @@ function SearchModal({ setIsModalOpen, setMusicTitle, setMusicUrl, postId }: Pro
   const onMusic = async (v: SetStateAction<any>, s: SetStateAction<any>, u: SetStateAction<any>) => {
     setMusicTitle(`${s} - ${v}`);
     setMusicUrl(u);
-    await axios.post('https://api.oz-02-main-04.xyz/api/v1/posts/music/3', { title: v, singer: s, song_url: u });
+    await axios.post('https://api.petodo.today/api/v1/posts/music/3', { title: v, singer: s, song_url: u });
   };
 
   return (

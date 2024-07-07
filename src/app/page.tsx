@@ -22,7 +22,7 @@ function Main() {
   console.log(user);
   useEffect(() => {
     axios
-      .get<petType>('https://api.oz-02-main-04.xyz/api/v1/pets/mypet/1/')
+      .get<petType>('https://api.petodo.today/api/v1/pets/mypet/1/')
       .then(response => {
         setPetData(response.data);
         const backgroundImageURL = response.data.primary_background.image;

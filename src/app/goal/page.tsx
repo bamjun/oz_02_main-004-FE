@@ -18,7 +18,7 @@ function Goal() {
 
   const refreshAccessToken = async () => {
     try {
-      const response = await axios.post('https://api.oz-02-main-04.xyz/api/token/refresh/', {
+      const response = await axios.post('https://api.petodo.today/api/token/refresh/', {
         refresh: refreshToken,
       });
       const newAccessToken = response.data.access;
@@ -55,7 +55,7 @@ function Goal() {
 
     try {
       const response = await axios.post(
-        `https://api.oz-02-main-04.xyz/api/v1/posts/goal`,
+        `https://api.petodo.today/api/v1/posts/goal`,
         { goal, d_day: dDay, days_by_deadline: '' },
         {
           withCredentials: true,
@@ -74,7 +74,7 @@ function Goal() {
         if (newAccessToken) {
           try {
             const retryResponse = await axios.post(
-              `https://api.oz-02-main-04.xyz/api/v1/posts/goal`,
+              `https://api.petodo.today/api/v1/posts/goal`,
               { goal, d_day: dDay, days_by_deadline: '' },
               {
                 withCredentials: true,

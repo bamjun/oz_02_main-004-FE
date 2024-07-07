@@ -45,7 +45,7 @@ const Nickname = () => {
 
       if (!accessToken || !csrfToken) return;
       try {
-        const response = await axios.get('https://api.oz-02-main-04.xyz/api/v1/users/myinfo/', {
+        const response = await axios.get('https://api.petodo.today/api/v1/users/myinfo/', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'X-CSRFToken': csrfToken,
@@ -72,7 +72,7 @@ const Nickname = () => {
     }
     try {
       const response = await axios.post(
-        'https://api.oz-02-main-04.xyz/api/v1/users/myinfo/',
+        'https://api.petodo.today/api/v1/users/myinfo/',
         {
           action: 'change_nickname',
           nickname: newNickname,

@@ -10,7 +10,7 @@ function Mood({ formattedDate }: Props) {
   const [selectMood, setSelectMood] = useState<number>();
 
   const handleSelect = async (selectMood: number) => {
-    // await axios.put('https://api.oz-02-main-04.xyz/api/v1/posts/1', { feeling_status: selectMood });
+    // await axios.put('https://api.petodo.today/api/v1/posts/1', { feeling_status: selectMood });
     setSelectMood(selectMood);
   };
 
